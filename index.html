@@ -1,0 +1,291 @@
+<title>Valify — A valuation that shows its working</title>
+<style>
+  :root {
+    --paper: #f3f4ef;
+    --paper-raised: #eceee6;
+    --ink: #1e2e28;
+    --ink-soft: #4c6459;
+    --ink-faint: #7a8c82;
+    --stamp: #b5502c;
+    --stamp-ink: #fdf6f1;
+    --line: #c7cdc0;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", "Courier New", monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #131f1a;
+      --paper-raised: #182620;
+      --ink: #e8eae2;
+      --ink-soft: #9fb0a5;
+      --ink-faint: #62766b;
+      --stamp: #e08a5b;
+      --stamp-ink: #201108;
+      --line: #33443b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #131f1a;
+    --paper-raised: #182620;
+    --ink: #e8eae2;
+    --ink-soft: #9fb0a5;
+    --ink-faint: #62766b;
+    --stamp: #e08a5b;
+    --stamp-ink: #201108;
+    --line: #33443b;
+  }
+  :root[data-theme="light"] {
+    --paper: #f3f4ef;
+    --paper-raised: #eceee6;
+    --ink: #1e2e28;
+    --ink-soft: #4c6459;
+    --ink-faint: #7a8c82;
+    --stamp: #b5502c;
+    --stamp-ink: #fdf6f1;
+    --line: #c7cdc0;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--serif);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  }
+
+  .sheet {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: clamp(2rem, 6vw, 5rem) clamp(1.25rem, 5vw, 2rem) 4rem;
+  }
+
+  /* ---------- Letterhead ---------- */
+  .letterhead {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    padding-bottom: 1.6rem;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: clamp(2.2rem, 5vw, 3.2rem);
+  }
+  .wordmark {
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .meta-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.6rem 1.5rem;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--ink-soft);
+  }
+  .meta-fields dt {
+    letter-spacing: 0.08em;
+    color: var(--ink-faint);
+  }
+  .meta-fields dd {
+    margin: 0.1rem 0 0;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(2.1rem, 5.4vw, 3.05rem);
+    line-height: 1.12;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    margin: 0 0 1.15rem;
+  }
+  .hero .dek {
+    max-width: 46ch;
+    font-size: 1.1rem;
+    color: var(--ink-soft);
+    margin: 0 0 2.2rem;
+  }
+  .hero .lede {
+    max-width: 62ch;
+    font-size: 1.02rem;
+    color: var(--ink);
+  }
+  .hero .lede + .lede { margin-top: 1rem; }
+
+  /* ---------- Ledger (how it works) ---------- */
+  .ledger {
+    margin-top: clamp(2.6rem, 6vw, 3.6rem);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .ledger-row {
+    display: grid;
+    grid-template-columns: 3.2rem 8rem 1fr;
+    gap: 1rem;
+    align-items: baseline;
+    padding: 1.15rem 0;
+  }
+  .ledger-row + .ledger-row { border-top: 1px solid var(--line); }
+  .ledger-num {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+  }
+  .ledger-step {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--stamp);
+  }
+  .ledger-desc {
+    font-size: 0.98rem;
+    color: var(--ink-soft);
+  }
+  @media (max-width: 520px) {
+    .ledger-row { grid-template-columns: 2.2rem 1fr; }
+    .ledger-num { display: none; }
+  }
+
+  /* ---------- Certification / CTA ---------- */
+  .cert {
+    margin-top: clamp(2.8rem, 6vw, 4rem);
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    padding: clamp(1.6rem, 4vw, 2.4rem);
+  }
+  .cert-label {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 0.9rem;
+  }
+  .cert p {
+    max-width: 52ch;
+    font-size: 1.02rem;
+    margin: 0 0 1.5rem;
+  }
+  .signature-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding-top: 1.2rem;
+    border-top: 1px dashed var(--line);
+  }
+  .signature {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 1.5rem;
+    color: var(--ink);
+  }
+  .signature-meta {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    margin-top: 0.25rem;
+    font-style: normal;
+  }
+  .stamp-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    color: var(--stamp-ink);
+    background: var(--stamp);
+    padding: 0.65rem 1.1rem;
+    border-radius: 2px;
+    text-decoration: none;
+    transition: opacity 0.15s ease;
+  }
+  .stamp-link:hover { opacity: 0.85; }
+  .stamp-link:focus-visible {
+    outline: 2px solid var(--stamp);
+    outline-offset: 2px;
+  }
+
+  /* ---------- Footer ---------- */
+  .foot {
+    margin-top: 3rem;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.03em;
+  }
+</style>
+
+<div class="sheet">
+
+  <header class="letterhead">
+    <div class="wordmark">Valify</div>
+    <dl class="meta-fields">
+      <div>
+        <dt>Prepared by</dt>
+        <dd>Valify</dd>
+      </div>
+      <div>
+        <dt>Status</dt>
+        <dd>Pilot in progress</dd>
+      </div>
+      <div>
+        <dt>Region</dt>
+        <dd>Sydney — Eastern Suburbs</dd>
+      </div>
+    </dl>
+  </header>
+
+  <section class="hero">
+    <h1>A valuation that shows its working.</h1>
+    <p class="dek">Every comparable sale, every adjustment, on the record — and still signed off by a qualified valuer.</p>
+    <p class="lede">Valify is an early-stage property valuation venture combining AI-assisted analysis with qualified human valuers. We're piloting the model on a defined pocket of Sydney's market — the eastern suburbs — before deciding how far to take it.</p>
+    <p class="lede">The aim is a model that handles most, and eventually hopefully all, of the steps involved in producing a valuation, built up from real comparable-sale evidence rather than a black-box estimate — with a clear audit trail behind every figure.</p>
+  </section>
+
+  <section class="ledger" aria-label="How a Valify valuation is produced">
+    <div class="ledger-row">
+      <span class="ledger-num">01</span>
+      <span class="ledger-step">Gather</span>
+      <span class="ledger-desc">Comparable sales are located and matched against the subject property's location, land size, and dwelling type.</span>
+    </div>
+    <div class="ledger-row">
+      <span class="ledger-num">02</span>
+      <span class="ledger-step">Analyse</span>
+      <span class="ledger-desc">Each comparable is assessed against the evidence — land, building, condition, aspect, outlook — and weighed against the subject.</span>
+    </div>
+    <div class="ledger-row">
+      <span class="ledger-num">03</span>
+      <span class="ledger-step">Certify</span>
+      <span class="ledger-desc">A qualified valuer reviews the analysis and signs off the final figure before it goes out.</span>
+    </div>
+  </section>
+
+  <section class="cert">
+    <div class="cert-label">Certified for discussion</div>
+    <p>If what we're building overlaps with what you're doing, we'd like to talk.</p>
+    <div class="signature-row">
+      <div>
+        <div class="signature">Dane</div>
+        <div class="signature-meta">Founder, Valify</div>
+      </div>
+      <a class="stamp-link" href="mailto:danevanemden@gmail.com">Get in touch →</a>
+    </div>
+  </section>
+
+  <footer class="foot">Valify · Sydney, Australia · Pilot stage, not yet publicly available</footer>
+
+</div>
