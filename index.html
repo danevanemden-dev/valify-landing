@@ -158,9 +158,11 @@
   .compare p { margin: 0; font-size: 0.95rem; color: var(--ink-soft); }
 
   /* ---------- Footer ---------- */
-  footer { border-top: 1px solid var(--line); padding: 1.6rem 0 2.2rem; font-size: 0.85rem; color: var(--ink-soft); }
-  footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.6rem 2rem; }
+  footer { border-top: 1px solid var(--line); padding: 1.8rem 0 2.4rem; font-size: 0.85rem; color: var(--ink-soft); }
   footer p { margin: 0; }
+  .legal { display: grid; gap: 0.7rem; max-width: 70ch; font-size: 0.8rem; line-height: 1.55; margin-bottom: 1.6rem; }
+  .legal a { text-underline-offset: 2px; }
+  .foot-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.5rem 2rem; padding-top: 1.1rem; border-top: 1px solid var(--line); }
 </style>
 </head>
 <body>
@@ -274,8 +276,14 @@
 
 <footer>
   <div class="wrap">
-    <p>Valify · Australia</p>
-    <p><a id="contact-email" href="mailto:dane@valify.com">dane@valify.com</a></p>
+    <div class="legal">
+      <p><strong>Disclaimer:</strong> The information on this website is general in nature and is not tax, legal or financial advice. How capital gains tax applies depends on your personal circumstances, so please speak with your accountant, registered tax agent or financial adviser before acting on it.</p>
+      <p>The <a href="https://www.ato.gov.au/individuals-and-families/investments-and-assets/capital-gains-tax/market-valuation-of-assets" target="_blank" rel="noopener">ATO's guidance</a> is that a market valuation used for tax purposes should be objective and supportable.</p>
+    </div>
+    <div class="foot-row">
+      <p>© 2026 Valify · Australia. All rights reserved.</p>
+      <p><a id="contact-email" href="mailto:dane@valify.com">dane@valify.com</a></p>
+    </div>
   </div>
 </footer>
 
