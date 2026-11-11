@@ -90,6 +90,7 @@
   .quote { padding: clamp(1.5rem, 4vw, 2.5rem) 0 clamp(2.5rem, 6vw, 4rem); }
   .form-card { background: var(--raised); border: 1px solid var(--line); border-radius: 4px; padding: clamp(1.3rem, 4vw, 2.2rem); }
   .form-card h2 { font-size: 1.6rem; margin-bottom: 0.4rem; }
+  #quote-intro h2 { margin-bottom: 1.5rem; }
   .form-card .sub { color: var(--ink-soft); margin: 0 0 1.5rem; }
   .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.1rem 1.25rem; }
   .form-grid .full { grid-column: 1 / -1; }
@@ -211,6 +212,13 @@
       <p class="eyebrow">Capital gains tax valuations</p>
       <h1>Capital gains tax valuations for investment property.</h1>
       <p class="spiel">From 1 July 2027, new rules change how capital gains tax applies to investment property. A market valuation as at that date can establish the starting value used to work out your gain.</p>
+      <div class="timeline" role="img" aria-label="Your ownership period, divided at 1 July 2027. Gain before that date keeps the 50% CGT discount. Gain after it is taxed under cost base indexation, with a minimum rate of 30%.">
+        <div class="tl-bar">
+          <div class="tl-seg tl-before"><strong>Gain before the changeover</strong><span>50% CGT discount</span></div>
+          <div class="tl-seg tl-after"><strong>Gain after the changeover</strong><span>Cost base indexation, minimum 30% tax</span></div>
+        </div>
+        <div class="tl-ends"><span>Purchase</span><span>1 July 2027</span><span>Sale</span></div>
+      </div>
       <p class="spiel soft">Valify specialises in preparing capital gains tax valuations for investment property owners. To request a quote, please fill out the form below.</p>
       <p class="small-print">General information only, not tax advice. Please speak to your accountant about how the changes apply to your situation.</p>
     </div>
@@ -222,7 +230,6 @@
 
         <div id="quote-intro">
           <h2>Request a quote</h2>
-          <p class="sub">It takes about two minutes.</p>
         </div>
 
         <form id="quote-form" novalidate>
