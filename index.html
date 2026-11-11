@@ -1,414 +1,477 @@
-<title>Valify — A valuation that shows its working</title>
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Valify — Capital gains tax valuations for investment property</title>
+<meta name="description" content="From 1 July 2027, new rules change how capital gains tax applies to investment property. Valify prepares capital gains tax valuations for investment property owners. Request a quote.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231e2e28'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23b5502c'/%3E%3C/svg%3E">
 <style>
   :root {
     --paper: #f3f4ef;
-    --paper-raised: #eceee6;
+    --raised: #fafaf6;
     --ink: #1e2e28;
     --ink-soft: #4c6459;
     --ink-faint: #7a8c82;
     --stamp: #b5502c;
     --stamp-ink: #fdf6f1;
     --line: #c7cdc0;
+    --hover: rgba(47, 74, 59, 0.09);
+    --err-bg: rgba(181, 80, 44, 0.10);
     --glow: 47, 74, 59;
     --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", "Courier New", monospace;
   }
-
   @media (prefers-color-scheme: dark) {
-    :root {
-      --paper: #131f1a;
-      --paper-raised: #182620;
-      --ink: #e8eae2;
-      --ink-soft: #9fb0a5;
-      --ink-faint: #62766b;
-      --stamp: #e08a5b;
-      --stamp-ink: #201108;
-      --line: #33443b;
-      --glow: 224, 138, 91;
+    :root:not([data-theme="light"]) {
+      --paper: #131f1a; --raised: #182620; --ink: #e8eae2; --ink-soft: #9fb0a5;
+      --ink-faint: #62766b; --stamp: #e08a5b; --stamp-ink: #201108; --line: #33443b;
+      --hover: rgba(224, 138, 91, 0.14); --err-bg: rgba(224, 138, 91, 0.14); --glow: 224, 138, 91;
     }
   }
   :root[data-theme="dark"] {
-    --paper: #131f1a;
-    --paper-raised: #182620;
-    --ink: #e8eae2;
-    --ink-soft: #9fb0a5;
-    --ink-faint: #62766b;
-    --stamp: #e08a5b;
-    --stamp-ink: #201108;
-    --line: #33443b;
-    --glow: 224, 138, 91;
-  }
-  :root[data-theme="light"] {
-    --paper: #f3f4ef;
-    --paper-raised: #eceee6;
-    --ink: #1e2e28;
-    --ink-soft: #4c6459;
-    --ink-faint: #7a8c82;
-    --stamp: #b5502c;
-    --stamp-ink: #fdf6f1;
-    --line: #c7cdc0;
-    --glow: 47, 74, 59;
+    --paper: #131f1a; --raised: #182620; --ink: #e8eae2; --ink-soft: #9fb0a5;
+    --ink-faint: #62766b; --stamp: #e08a5b; --stamp-ink: #201108; --line: #33443b;
+    --hover: rgba(224, 138, 91, 0.14); --err-bg: rgba(224, 138, 91, 0.14); --glow: 224, 138, 91;
   }
 
   * { box-sizing: border-box; }
-  html { background: var(--paper); }
+  html { scroll-behavior: smooth; background: var(--paper); }
   body {
-    background:
-      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(var(--glow), 0.10), transparent 60%),
-      var(--paper);
-    background-attachment: fixed;
+    margin: 0;
+    background: var(--paper);
     color: var(--ink);
-    font-family: var(--serif);
-    line-height: 1.55;
+    font-family: var(--sans);
+    font-size: 1rem;
+    line-height: 1.6;
     -webkit-font-smoothing: antialiased;
-    position: relative;
-    min-height: 100vh;
   }
-  /* fine paper grain, layered as a separate fixed sheet so it never scrolls oddly */
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    opacity: 0.5;
-    mix-blend-mode: multiply;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.02 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
-  }
-  @media (prefers-color-scheme: dark) {
-    body::before { mix-blend-mode: overlay; opacity: 0.35; }
-  }
-
   @media (prefers-reduced-motion: reduce) {
-    * { animation: none !important; transition-duration: 0.001ms !important; }
+    html { scroll-behavior: auto; }
+    * { transition-duration: 0.001ms !important; animation: none !important; }
   }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--stamp); outline-offset: 2px; }
 
-  .sheet {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: clamp(2rem, 6vw, 5rem) clamp(1.25rem, 5vw, 2rem) 4rem;
-    position: relative;
-  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 clamp(1.1rem, 4vw, 2rem); }
 
-  @keyframes rise {
-    from { opacity: 0; transform: translateY(14px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .rise { animation: rise 0.7s cubic-bezier(.16,.8,.24,1) both; }
-
-  /* ---------- Letterhead ---------- */
-  .letterhead {
-    display: flex;
-    flex-direction: column;
-    gap: 1.1rem;
-    padding-bottom: 1.6rem;
-    border-bottom: 1px solid var(--line);
-    margin-bottom: clamp(2.2rem, 5vw, 3.2rem);
-    animation-delay: 0.02s;
-  }
+  /* ---------- Header ---------- */
+  .site-header { border-bottom: 1px solid var(--line); }
+  .site-header .wrap { display: flex; align-items: center; height: 4rem; }
   .wordmark {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 0.55rem;
-    font-size: 1.05rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    width: fit-content;
+    display: inline-flex; align-items: baseline; gap: 0.55rem;
+    font-family: var(--serif); font-size: 1.15rem; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase; text-decoration: none;
   }
-  .wordmark .dot {
-    width: 0.4em;
-    height: 0.4em;
-    border-radius: 50%;
-    background: var(--stamp);
-    display: inline-block;
-    transform: translateY(-0.05em);
+  .wordmark .dot { width: 0.4em; height: 0.4em; border-radius: 50%; background: var(--stamp); display: inline-block; transform: translateY(-0.05em); }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    font-family: var(--sans); font-size: 1rem; font-weight: 600;
+    padding: 0.8rem 1.5rem; border-radius: 3px; border: 1px solid var(--stamp);
+    background: var(--stamp); color: var(--stamp-ink); text-decoration: none; cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
   }
-  .meta-fields {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 0.6rem 1.5rem;
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    color: var(--ink-soft);
-  }
-  .meta-fields dt {
-    letter-spacing: 0.08em;
-    color: var(--ink-faint);
-  }
-  .meta-fields dd {
-    margin: 0.1rem 0 0;
-    color: var(--ink);
-    font-variant-numeric: tabular-nums;
-  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 14px rgba(var(--glow), 0.25); }
+  .btn:active { transform: translateY(0); }
+  .btn[disabled] { opacity: 0.6; cursor: progress; transform: none; box-shadow: none; }
 
   /* ---------- Hero ---------- */
-  .hero h1 {
-    font-family: var(--serif);
-    font-weight: 400;
-    font-size: clamp(2.3rem, 6.2vw, 3.6rem);
-    line-height: 1.08;
-    letter-spacing: -0.01em;
-    text-wrap: balance;
-    margin: 0 0 1.15rem;
-    animation-delay: 0.1s;
-  }
-  .hero .dek {
-    max-width: 46ch;
-    font-size: 1.15rem;
-    color: var(--ink-soft);
-    margin: 0 0 2.2rem;
-    animation-delay: 0.2s;
-  }
-  .hero .lede {
-    max-width: 62ch;
-    font-size: 1.02rem;
-    color: var(--ink);
-    animation-delay: 0.28s;
-  }
-  .hero .lede + .lede { margin-top: 1rem; animation-delay: 0.34s; }
+  .hero { padding: clamp(2.8rem, 8vw, 5rem) 0 clamp(2rem, 5vw, 3rem); }
+  .eyebrow { font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--stamp); margin: 0 0 1rem; }
+  h1, h2 { font-family: var(--serif); font-weight: 500; text-wrap: balance; margin: 0; }
+  h1 { font-size: clamp(2.1rem, 6vw, 3.2rem); line-height: 1.1; letter-spacing: -0.01em; margin-bottom: 1.4rem; }
+  .spiel { font-size: 1.1rem; margin: 0 0 1rem; max-width: 60ch; }
+  .spiel.soft { color: var(--ink-soft); }
+  .small-print { font-size: 0.82rem; color: var(--ink-soft); margin: 1.4rem 0 0; max-width: 60ch; }
 
-  /* ---------- Ledger (how it works) ---------- */
-  .ledger {
-    margin-top: clamp(2.6rem, 6vw, 3.6rem);
-    border-top: 1px solid var(--line);
-    border-bottom: 1px solid var(--line);
+  /* ---------- Quote form ---------- */
+  .quote { padding: clamp(1.5rem, 4vw, 2.5rem) 0 clamp(2.5rem, 6vw, 4rem); }
+  .form-card { background: var(--raised); border: 1px solid var(--line); border-radius: 4px; padding: clamp(1.3rem, 4vw, 2.2rem); }
+  .form-card h2 { font-size: 1.6rem; margin-bottom: 0.4rem; }
+  .form-card .sub { color: var(--ink-soft); margin: 0 0 1.5rem; }
+  .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.1rem 1.25rem; }
+  .form-grid .full { grid-column: 1 / -1; }
+  @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+  label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem; }
+  label .opt { font-weight: 400; color: var(--ink-soft); }
+  input[type="text"], input[type="email"], input[type="tel"] {
+    width: 100%; font: inherit; font-size: 1rem; color: var(--ink);
+    background: var(--paper); border: 1px solid var(--line); border-radius: 3px;
+    padding: 0.65rem 0.75rem;
   }
-  .ledger-row {
-    display: grid;
-    grid-template-columns: 3.2rem 8rem 1fr;
-    gap: 1rem;
-    align-items: baseline;
-    padding: 1.15rem 0;
-    transition: padding-left 0.25s ease, background 0.25s ease;
-    border-radius: 2px;
-  }
-  .ledger-row:hover {
-    padding-left: 0.5rem;
-    background: rgba(var(--glow), 0.05);
-  }
-  .ledger-row + .ledger-row { border-top: 1px solid var(--line); }
-  .ledger-num {
-    font-family: var(--mono);
-    font-size: 0.85rem;
-    color: var(--ink-faint);
-    font-variant-numeric: tabular-nums;
-  }
-  .ledger-step {
-    font-family: var(--mono);
-    font-size: 0.78rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--stamp);
-  }
-  .ledger-desc {
-    font-size: 0.98rem;
-    color: var(--ink-soft);
-  }
-  @media (max-width: 520px) {
-    .ledger-row { grid-template-columns: 2.2rem 1fr; }
-    .ledger-num { display: none; }
-  }
+  input::placeholder { color: var(--ink-faint); }
+  input:focus { border-color: var(--stamp); outline: none; box-shadow: 0 0 0 3px rgba(var(--glow), 0.18); }
+  .botcheck { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .fine { font-size: 0.82rem; color: var(--ink-soft); margin: 0; }
+  .form-status { margin-top: 1rem; padding: 0.85rem 1rem; border-radius: 3px; font-size: 0.94rem; display: none; }
+  .form-status.show { display: block; }
+  .form-status.err { background: var(--err-bg); border: 1px solid var(--stamp); }
 
-  /* ---------- Certification / CTA ---------- */
-  .cert {
-    margin-top: clamp(2.8rem, 6vw, 4rem);
-    background: var(--paper-raised);
-    border: 1px solid var(--line);
-    border-radius: 3px;
-    padding: clamp(1.6rem, 4vw, 2.4rem);
-    position: relative;
-    overflow: hidden;
+  /* property rows + address suggestions */
+  .addr-rows { display: grid; gap: 1rem; }
+  .addr-row-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+  .link-btn {
+    background: none; border: 0; padding: 0; font: inherit; font-size: 0.85rem; font-weight: 600;
+    color: var(--stamp); cursor: pointer; text-decoration: underline; text-underline-offset: 3px;
   }
-  .cert-label {
-    font-family: var(--mono);
-    font-size: 0.7rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink-faint);
-    margin-bottom: 0.9rem;
+  .link-btn.muted { color: var(--ink-soft); font-weight: 400; }
+  .add-btn { margin-top: 0.9rem; font-size: 0.95rem; }
+  .combo { position: relative; }
+  .suggestions {
+    position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 4px);
+    margin: 0; padding: 0.25rem 0; list-style: none;
+    background: var(--raised); border: 1px solid var(--line); border-radius: 3px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.14); max-height: 16rem; overflow-y: auto;
   }
-  .cert p {
-    max-width: 46ch;
-    font-size: 1.05rem;
-    margin: 0 0 1.5rem;
-    position: relative;
-    z-index: 1;
-  }
-  .signature-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 1.5rem;
-    padding-top: 1.2rem;
-    border-top: 1px dashed var(--line);
-    position: relative;
-    z-index: 1;
-  }
-  .signature-wrap { position: relative; }
-  .signature {
-    font-family: var(--serif);
-    font-style: italic;
-    font-size: 1.7rem;
-    color: var(--ink);
-    position: relative;
-    display: inline-block;
-  }
-  .signature svg {
-    position: absolute;
-    left: -2%;
-    bottom: -0.55rem;
-    width: 104%;
-    height: 12px;
-    overflow: visible;
-  }
-  .signature svg path {
-    fill: none;
-    stroke: var(--stamp);
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-dasharray: 140;
-    stroke-dashoffset: 140;
-    animation: draw 0.9s ease-out 1.1s forwards;
-  }
-  @keyframes draw { to { stroke-dashoffset: 0; } }
-  .signature-meta {
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    color: var(--ink-faint);
-    margin-top: 0.4rem;
-    font-style: normal;
-  }
-  .stamp-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-family: var(--mono);
-    font-size: 0.82rem;
-    letter-spacing: 0.04em;
-    color: var(--stamp-ink);
-    background: var(--stamp);
-    padding: 0.7rem 1.2rem;
-    border-radius: 2px;
-    text-decoration: none;
-    transition: transform 0.2s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s ease;
-    box-shadow: 0 1px 0 rgba(0,0,0,0.08);
-  }
-  .stamp-link:hover {
-    transform: translateY(-2px) rotate(-1deg);
-    box-shadow: 0 6px 14px rgba(var(--glow), 0.28);
-  }
-  .stamp-link:active { transform: translateY(0) rotate(0deg) scale(0.97); }
-  .stamp-link:focus-visible {
-    outline: 2px solid var(--stamp);
-    outline-offset: 2px;
-  }
+  .suggestions[hidden] { display: none; }
+  .suggestions li { padding: 0.6rem 0.85rem; cursor: pointer; font-size: 0.95rem; }
+  .suggestions li[aria-selected="true"], .suggestions li:hover { background: var(--hover); }
 
-  /* Rotating certification seal */
-  .seal {
-    position: absolute;
-    top: -34px;
-    right: -34px;
-    width: 132px;
-    height: 132px;
-    color: var(--stamp);
-    opacity: 0.9;
-    animation: spin 34s linear infinite;
-    z-index: 0;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .seal circle.ring {
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.4;
-    stroke-dasharray: 3 4;
-    opacity: 0.75;
-  }
-  .seal text {
-    font-family: var(--mono);
-    font-size: 8.6px;
-    letter-spacing: 0.2em;
-    fill: currentColor;
-  }
-  @media (max-width: 560px) {
-    .seal { width: 96px; height: 96px; top: -22px; right: -22px; }
-  }
+  /* ---------- After submit ---------- */
+  .done[hidden] { display: none; }
+  .done h2 { font-size: 1.6rem; margin-bottom: 0.9rem; }
+  .done p { margin: 0 0 1rem; max-width: 62ch; }
+
+  /* ---------- Explainer ---------- */
+  .explainer { padding: clamp(2.2rem, 6vw, 4rem) 0; border-top: 1px solid var(--line); }
+  .explainer h2 { font-size: clamp(1.5rem, 4vw, 2rem); line-height: 1.2; margin-bottom: 1rem; }
+  .explainer p { margin: 0 0 1rem; max-width: 64ch; }
+  .explainer .lead { font-size: 1.05rem; }
+
+  .timeline { margin: 1.8rem 0 2rem; }
+  .tl-bar { display: grid; grid-template-columns: 1fr 1fr; }
+  .tl-seg { padding: 0.9rem 1rem; border: 1px solid var(--line); font-size: 0.9rem; line-height: 1.4; }
+  .tl-seg strong { display: block; font-weight: 600; margin-bottom: 0.15rem; }
+  .tl-seg span { color: var(--ink-soft); }
+  .tl-before { background: rgba(var(--glow), 0.10); border-radius: 3px 0 0 3px; border-right: 0; }
+  .tl-after { background: var(--err-bg); border-radius: 0 3px 3px 0; }
+  .tl-ends { display: grid; grid-template-columns: 1fr auto 1fr; margin-top: 0.5rem; font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); }
+  .tl-ends span:nth-child(2) { color: var(--stamp); font-weight: 600; }
+  .tl-ends span:last-child { text-align: right; }
+
+  .compare-title { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); margin: 0 0 0.8rem; }
+  .compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .compare article { background: var(--raised); border: 1px solid var(--line); border-radius: 4px; padding: 1.2rem 1.3rem 1.3rem; }
+  .compare h3 { font-family: var(--serif); font-weight: 500; font-size: 1.2rem; margin: 0 0 0.5rem; }
+  .compare p { margin: 0; font-size: 0.95rem; color: var(--ink-soft); }
 
   /* ---------- Footer ---------- */
-  .foot {
-    margin-top: 3rem;
-    font-family: var(--mono);
-    font-size: 0.7rem;
-    color: var(--ink-faint);
-    letter-spacing: 0.03em;
-  }
+  footer { border-top: 1px solid var(--line); padding: 1.6rem 0 2.2rem; font-size: 0.85rem; color: var(--ink-soft); }
+  footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.6rem 2rem; }
+  footer p { margin: 0; }
 </style>
+</head>
+<body>
 
-<div class="sheet">
+<header class="site-header">
+  <div class="wrap">
+    <a class="wordmark" href="#top"><span class="dot"></span>Valify</a>
+  </div>
+</header>
 
-  <header class="letterhead rise">
-    <div class="wordmark"><span class="dot"></span>Valify</div>
-    <dl class="meta-fields">
-      <div>
-        <dt>Status</dt>
-        <dd>Development in progress</dd>
-      </div>
-      <div>
-        <dt>Region</dt>
-        <dd>Sydney — Eastern Suburbs</dd>
-      </div>
-    </dl>
-  </header>
+<main id="top">
 
   <section class="hero">
-    <h1 class="rise">A valuation that shows its working.</h1>
-    <p class="dek rise">Every comparable sale, every adjustment, on the record.</p>
-    <p class="lede rise">Valify is an early-stage property valuation venture combining AI-assisted analysis with qualified human valuers. We're developing the model on a defined pocket of Sydney's market — the eastern suburbs — before deciding how far to take it.</p>
-    <p class="lede rise">The aim is a team of AI agents that handle all of the steps involved in producing a valuation, the way a real human valuer would — with a clear audit trail behind every figure.</p>
-  </section>
-
-  <section class="ledger" aria-label="How a Valify valuation is produced">
-    <div class="ledger-row">
-      <span class="ledger-num">01</span>
-      <span class="ledger-step">Gather</span>
-      <span class="ledger-desc">Property address entered into Valify's search function.</span>
-    </div>
-    <div class="ledger-row">
-      <span class="ledger-num">02</span>
-      <span class="ledger-step">Analyse</span>
-      <span class="ledger-desc">The subject property is comprehensively analysed, then our AI agents locate and match the best comparable sales. The sales are then analysed against the subject property's attributes.</span>
-    </div>
-    <div class="ledger-row">
-      <span class="ledger-num">03</span>
-      <span class="ledger-step">Value</span>
-      <span class="ledger-desc">The subject property is valued autonomously, with a full bank-grade audit trail showing exactly how the model arrived at its figure.</span>
+    <div class="wrap">
+      <p class="eyebrow">Capital gains tax valuations</p>
+      <h1>Capital gains tax valuations for investment property.</h1>
+      <p class="spiel">From 1 July 2027, new rules change how capital gains tax applies to investment property. A market valuation as at that date can establish the starting value used to work out your gain.</p>
+      <p class="spiel soft">Valify specialises in preparing capital gains tax valuations for investment property owners. To request a quote, please fill out the form below.</p>
+      <p class="small-print">General information only, not tax advice. Please speak to your accountant about how the changes apply to your situation.</p>
     </div>
   </section>
 
-  <section class="cert">
-    <svg class="seal" viewBox="0 0 132 132" aria-hidden="true">
-      <circle class="ring" cx="66" cy="66" r="60"></circle>
-      <circle class="ring" cx="66" cy="66" r="50"></circle>
-      <path id="sealpath" d="M 66,66 m -58,0 a 58,58 0 1,1 116,0 a 58,58 0 1,1 -116,0" fill="none"></path>
-      <text>
-        <textPath href="#sealpath" startOffset="0%">• VALIFY • CERTIFIED FOR DISCUSSION </textPath>
-      </text>
-    </svg>
-    <div class="cert-label">Certified for discussion</div>
-    <p>If what we're building overlaps with what you're doing, we'd like to talk.</p>
-    <div class="signature-row">
-      <div class="signature-wrap">
-        <span class="signature">Dane
-          <svg viewBox="0 0 160 12" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M2,7 C 30,2 45,10 60,6 C 80,1 95,9 115,5 C 130,2 145,8 158,5"></path>
-          </svg>
-        </span>
-        <div class="signature-meta">Founder, Valify</div>
+  <section class="quote" id="quote">
+    <div class="wrap">
+      <div class="form-card">
+
+        <div id="quote-intro">
+          <h2>Request a quote</h2>
+          <p class="sub">It takes about two minutes.</p>
+        </div>
+
+        <form id="quote-form" novalidate>
+          <input type="hidden" name="access_key" value="PASTE_WEB3FORMS_ACCESS_KEY_HERE">
+          <input type="hidden" name="from_name" value="Valify website">
+          <input type="hidden" name="subject" value="New CGT valuation quote request">
+          <div class="botcheck" aria-hidden="true"><label>Leave this empty <input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off"></label></div>
+
+          <div class="form-grid">
+            <div class="full">
+              <label for="f-name">Full name</label>
+              <input id="f-name" name="name" type="text" autocomplete="name" required>
+            </div>
+            <div>
+              <label for="f-email">Email</label>
+              <input id="f-email" name="email" type="email" autocomplete="email" required>
+            </div>
+            <div>
+              <label for="f-phone">Phone</label>
+              <input id="f-phone" name="Phone" type="tel" autocomplete="tel" inputmode="tel" required pattern="[0-9+\(\)\s\-]{8,}" title="Please enter a phone number we can reach you on">
+            </div>
+            <div class="full">
+              <label for="f-referrer">Referred by <span class="opt">(optional)</span></label>
+              <input id="f-referrer" name="Referred by" type="text" placeholder="e.g. your property manager or agency">
+            </div>
+
+            <div class="full">
+              <div class="addr-rows" id="addr-rows"></div>
+              <button type="button" class="link-btn add-btn" id="add-property">+ Add another property</button>
+            </div>
+
+            <div class="full">
+              <p class="fine">By submitting this form you agree that we may contact you about your request.</p>
+            </div>
+            <div class="full">
+              <button class="btn" type="submit" id="quote-submit">Request my quote</button>
+            </div>
+          </div>
+
+          <div class="form-status" id="quote-status" role="status" aria-live="polite"></div>
+        </form>
+
+        <div class="done" id="quote-done" hidden tabindex="-1">
+          <h2>Thanks — your request is in.</h2>
+          <p>Please allow 5 to 10 business days for your quote, as we are dealing with a high number of quote requests.</p>
+        </div>
+
       </div>
-      <a class="stamp-link" href="mailto:danevanemden@gmail.com">Get in touch →</a>
     </div>
   </section>
 
-  <footer class="foot">Valify · Sydney, Australia · Currently in development, not yet publicly available</footer>
+  <section class="explainer" id="why">
+    <div class="wrap">
+      <h2>Your gain gets split in two. How it's split is worth checking.</h2>
+      <p class="lead">The new rules start on 1 July 2027. For a property bought before that date and sold after it, the gain is divided at the changeover. The earlier part keeps the 50% CGT discount; the later part moves to cost base indexation, with a minimum tax rate of 30%. The more of your gain that sits on the earlier side, the better the outcome.</p>
 
-</div>
+      <div class="timeline" role="img" aria-label="Your ownership period, divided at 1 July 2027. Gain before that date keeps the 50% CGT discount. Gain after it is taxed under cost base indexation, with a minimum rate of 30%.">
+        <div class="tl-bar">
+          <div class="tl-seg tl-before"><strong>Gain before the changeover</strong><span>50% CGT discount</span></div>
+          <div class="tl-seg tl-after"><strong>Gain after the changeover</strong><span>Cost base indexation, minimum 30% tax</span></div>
+        </div>
+        <div class="tl-ends"><span>Purchase</span><span>1 July 2027</span><span>Sale</span></div>
+      </div>
+
+      <p class="compare-title">Two ways to draw the line</p>
+      <div class="compare">
+        <article>
+          <h3>Treasury's draft formula</h3>
+          <p>It works on the assumption that your property grew at one steady rate for every year you've owned it. Markets rarely move that evenly, so where yours didn't, a meaningful share of the gain can land on a different side of the line than it really belongs, sometimes to your cost and sometimes to your benefit.</p>
+        </article>
+        <article>
+          <h3>An independent valuation</h3>
+          <p>An accredited valuer fixes a defensible, point-in-time market value at the changeover date. You can hold it up against the formula's result and use whichever one better reflects your circumstances.</p>
+        </article>
+      </div>
+
+      <p>Timing of growth is what usually decides which is better. If most of your property's growth is still ahead of you, the formula can end up working in your favour, because it treats more of the gain as though it happened earlier, under the 50% discount. If most of the growth came before July 2027, it can do the opposite, pushing more of the gain into the higher-taxed period than actually belongs there, and a valuation may do better. Your purchase price plays a part too: a higher original price tends to make the formula's result more favourable, whenever the growth occurred.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Valify · Australia</p>
+    <p><a id="contact-email" href="mailto:dane@valify.com">dane@valify.com</a></p>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var FALLBACK_EMAIL = document.getElementById('contact-email').textContent;
+    var ADDRESS_API = 'https://api.apps1.nsw.gov.au/planning/viewersf/V1/ePlanningApi/address';
+    var MAX_PROPERTIES = 10;
+    var SUFFIXES = ['ST','STREET','RD','ROAD','AVE','AV','AVENUE','PDE','PARADE','PL','PLACE','DR','DRIVE','CRES','CRESCENT','CT','COURT','LA','LANE','BVD','BOULEVARDE','BOULEVARD','CL','CLOSE','GR','GROVE','TCE','TERRACE','SQ','SQUARE','ESP','ESPLANADE','HWY','HIGHWAY','WAY','CIR','CIRCUIT','WALK','ROW'];
+
+    var form = document.getElementById('quote-form');
+    var status = document.getElementById('quote-status');
+    var button = document.getElementById('quote-submit');
+    var rowsEl = document.getElementById('addr-rows');
+    var addBtn = document.getElementById('add-property');
+    var intro = document.getElementById('quote-intro');
+    var done = document.getElementById('quote-done');
+    var rowCounter = 0;
+
+    function show(kind, html) {
+      status.className = 'form-status show ' + kind;
+      status.innerHTML = html;
+    }
+
+    /* ---------- address formatting ---------- */
+    function titleCase(s) {
+      return s.toLowerCase().replace(/(^|[\s\-'\/])([a-z])/g, function (m, a, b) { return a + b.toUpperCase(); });
+    }
+    // The API returns e.g. "43 107 MACPHERSON STREET BRONTE 2024" (unit 43 of 107). Tidy it up, and fall back to
+    // plain title-casing if it doesn't fit the expected shape.
+    function prettyAddress(raw) {
+      var tokens = String(raw || '').trim().split(/\s+/);
+      if (tokens.length < 3) return titleCase(String(raw || ''));
+      var postcode = tokens[tokens.length - 1];
+      if (!/^\d{4}$/.test(postcode)) return titleCase(tokens.join(' '));
+      var rest = tokens.slice(0, -1), i = 0, nums = [];
+      while (i < rest.length && /^[\d\-]+$/.test(rest[i])) { nums.push(rest[i]); i++; }
+      var tail = rest.slice(i), suffixIdx = -1;
+      for (var j = 0; j < tail.length; j++) { if (SUFFIXES.indexOf(tail[j].toUpperCase()) !== -1) suffixIdx = j; }
+      if (!nums.length || suffixIdx === -1 || suffixIdx === tail.length - 1) return titleCase(tokens.join(' '));
+      var number = nums.length >= 2 ? nums[0] + '/' + nums[1] : nums[0];
+      var street = tail.slice(0, suffixIdx + 1).join(' ');
+      var suburb = tail.slice(suffixIdx + 1).join(' ');
+      return number + ' ' + titleCase(street) + ', ' + titleCase(suburb) + ' ' + postcode;
+    }
+
+    /* ---------- address autocomplete ---------- */
+    function attachAutocomplete(input, list) {
+      var items = [], active = -1, timer = null, controller = null;
+
+      function close() {
+        list.hidden = true; input.setAttribute('aria-expanded', 'false');
+        input.removeAttribute('aria-activedescendant'); active = -1;
+      }
+      function setActive(n) {
+        var opts = list.children;
+        for (var k = 0; k < opts.length; k++) opts[k].setAttribute('aria-selected', k === n ? 'true' : 'false');
+        active = n;
+        if (n >= 0) { input.setAttribute('aria-activedescendant', opts[n].id); opts[n].scrollIntoView({ block: 'nearest' }); }
+        else input.removeAttribute('aria-activedescendant');
+      }
+      function choose(n) {
+        if (n < 0 || n >= items.length) return;
+        input.value = items[n];
+        close();
+      }
+      function render() {
+        list.textContent = '';
+        items.forEach(function (text, n) {
+          var li = document.createElement('li');
+          li.id = list.id + '-opt-' + n;
+          li.setAttribute('role', 'option');
+          li.setAttribute('aria-selected', 'false');
+          li.textContent = text;   // textContent, never innerHTML: these strings come from an external API
+          li.addEventListener('mousedown', function (e) { e.preventDefault(); choose(n); });
+          list.appendChild(li);
+        });
+        if (items.length && document.activeElement === input) { list.hidden = false; input.setAttribute('aria-expanded', 'true'); }
+        else close();
+      }
+      function search(q) {
+        if (controller) controller.abort();
+        controller = ('AbortController' in window) ? new AbortController() : null;
+        fetch(ADDRESS_API + '?a=' + encodeURIComponent(q) + '&noOfRecords=8', controller ? { signal: controller.signal } : {})
+          .then(function (r) { if (!r.ok) throw new Error('bad status'); return r.json(); })
+          .then(function (data) {
+            var seen = {}; items = [];
+            (Array.isArray(data) ? data : []).forEach(function (d) {
+              if (!d || typeof d.address !== 'string') return;
+              var p = prettyAddress(d.address);
+              if (!seen[p]) { seen[p] = 1; items.push(p); }
+            });
+            render();
+          })
+          .catch(function () { /* suggestions are a convenience only: on any failure the field stays a normal text box */ });
+      }
+
+      input.addEventListener('input', function () {
+        clearTimeout(timer);
+        var q = input.value.trim();
+        if (q.length < 3) { if (controller) controller.abort(); items = []; close(); return; }
+        timer = setTimeout(function () { search(q); }, 250);
+      });
+      input.addEventListener('keydown', function (e) {
+        if (list.hidden) return;
+        if (e.key === 'ArrowDown') { e.preventDefault(); setActive(active + 1 >= items.length ? 0 : active + 1); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); setActive(active <= 0 ? items.length - 1 : active - 1); }
+        else if (e.key === 'Enter' && active >= 0) { e.preventDefault(); choose(active); }
+        else if (e.key === 'Escape') { close(); }
+      });
+      input.addEventListener('blur', close);
+    }
+
+    /* ---------- property rows ---------- */
+    function renumber() {
+      var rows = rowsEl.querySelectorAll('.addr-row');
+      rows.forEach(function (row, n) {
+        row.querySelector('label').textContent = n === 0 ? 'Property address' : 'Property ' + (n + 1) + ' address';
+        var rm = row.querySelector('.remove');
+        if (rm) rm.setAttribute('aria-label', 'Remove property ' + (n + 1));
+      });
+      addBtn.hidden = rows.length >= MAX_PROPERTIES;
+    }
+    function addRow() {
+      var id = ++rowCounter, first = rowsEl.children.length === 0;
+      var row = document.createElement('div'); row.className = 'addr-row';
+      var head = document.createElement('div'); head.className = 'addr-row-head';
+      var label = document.createElement('label'); label.setAttribute('for', 'f-addr-' + id);
+      head.appendChild(label);
+      if (!first) {
+        var rm = document.createElement('button'); rm.type = 'button'; rm.className = 'link-btn muted remove'; rm.textContent = 'Remove';
+        rm.addEventListener('click', function () { row.remove(); renumber(); });
+        head.appendChild(rm);
+      }
+      var combo = document.createElement('div'); combo.className = 'combo';
+      var input = document.createElement('input');
+      input.type = 'text'; input.id = 'f-addr-' + id; input.className = 'addr-input';
+      input.placeholder = 'Start typing the address…'; input.autocomplete = 'off';
+      input.setAttribute('role', 'combobox'); input.setAttribute('aria-autocomplete', 'list');
+      input.setAttribute('aria-expanded', 'false'); input.setAttribute('aria-controls', 'f-addr-list-' + id);
+      if (first) input.required = true;
+      var list = document.createElement('ul'); list.id = 'f-addr-list-' + id; list.className = 'suggestions';
+      list.setAttribute('role', 'listbox'); list.hidden = true;
+      combo.appendChild(input); combo.appendChild(list);
+      row.appendChild(head); row.appendChild(combo);
+      rowsEl.appendChild(row);
+      attachAutocomplete(input, list);
+      renumber();
+      if (!first) input.focus();
+    }
+    addBtn.addEventListener('click', addRow);
+    addRow();
+
+    /* ---------- submit ---------- */
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (!form.checkValidity()) { form.reportValidity(); return; }
+
+      var addresses = Array.prototype.map.call(rowsEl.querySelectorAll('.addr-input'), function (i) { return i.value.trim(); })
+        .filter(Boolean);
+      var data = new FormData(form);
+      if (!data.get('access_key') || data.get('access_key').indexOf('PASTE_') === 0) {
+        show('err', 'This form isn’t connected yet. Please email us directly at <a href="mailto:' + FALLBACK_EMAIL + '">' + FALLBACK_EMAIL + '</a>.');
+        return;
+      }
+      data.set('Number of properties', String(addresses.length));
+      data.set('Property addresses', addresses.map(function (a, n) { return (n + 1) + '. ' + a; }).join('\n'));
+      data.set('subject', 'New CGT valuation quote request — ' + (data.get('name') || '') +
+        (addresses.length > 1 ? ' (' + addresses.length + ' properties)' : ''));
+
+      button.disabled = true;
+      button.textContent = 'Sending…';
+      status.className = 'form-status';
+
+      fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Accept': 'application/json' },
+        body: data
+      })
+        .then(function (r) { return r.json().then(function (j) { return { ok: r.ok && j.success, json: j }; }); })
+        .then(function (res) {
+          if (!res.ok) throw new Error((res.json && res.json.message) || 'Submission failed');
+          form.hidden = true; intro.hidden = true; done.hidden = false;
+          done.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          done.focus({ preventScroll: true });
+        })
+        .catch(function () {
+          show('err', 'Sorry, that didn’t send. Please try again, or email us at <a href="mailto:' + FALLBACK_EMAIL + '">' + FALLBACK_EMAIL + '</a>.');
+        })
+        .finally(function () {
+          button.disabled = false;
+          button.textContent = 'Request my quote';
+        });
+    });
+  })();
+</script>
+
+</body>
+</html>
