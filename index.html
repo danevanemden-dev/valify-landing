@@ -163,6 +163,37 @@
   .legal { display: grid; gap: 0.7rem; max-width: 70ch; font-size: 0.8rem; line-height: 1.55; margin-bottom: 1.6rem; }
   .legal a { text-underline-offset: 2px; }
   .foot-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.5rem 2rem; padding-top: 1.1rem; border-top: 1px solid var(--line); }
+
+  textarea {
+    width: 100%; font: inherit; font-size: 1rem; color: var(--ink);
+    background: var(--paper); border: 1px solid var(--line); border-radius: 3px;
+    padding: 0.65rem 0.75rem; min-height: 7rem; resize: vertical;
+  }
+  textarea:focus { border-color: var(--stamp); outline: none; box-shadow: 0 0 0 3px rgba(var(--glow), 0.18); }
+
+  /* estimated value input */
+  .value-label { margin-top: 0.9rem; }
+  .money { position: relative; max-width: 16rem; }
+  .money .sign { position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); color: var(--ink-soft); pointer-events: none; }
+  .money input { padding-left: 1.7rem; }
+
+  /* footer contact link */
+  .foot-link { color: var(--ink); font-size: 0.85rem; font-weight: 400; }
+
+  /* contact dialog */
+  dialog {
+    padding: 0; border: 1px solid var(--line); border-radius: 4px; background: var(--raised); color: var(--ink);
+    width: min(520px, calc(100% - 2rem)); max-height: calc(100vh - 2rem); overflow: auto;
+  }
+  dialog::backdrop { background: rgba(15, 25, 20, 0.55); }
+  .dialog-body { padding: clamp(1.3rem, 4vw, 2rem); position: relative; }
+  .dialog-body h2 { font-size: 1.5rem; margin: 0 2rem 0.4rem 0; }
+  .dialog-body .sub { color: var(--ink-soft); margin: 0 0 1.3rem; }
+  .dialog-close {
+    position: absolute; top: 0.55rem; right: 0.7rem; background: none; border: 0; cursor: pointer;
+    font-size: 1.7rem; line-height: 1; color: var(--ink-soft); padding: 0.3rem 0.55rem;
+  }
+  .dialog-close:hover { color: var(--ink); }
 </style>
 </head>
 <body>
@@ -281,31 +312,94 @@
       <p>The <a href="https://www.ato.gov.au/individuals-and-families/investments-and-assets/capital-gains-tax/market-valuation-of-assets" target="_blank" rel="noopener">ATO's guidance</a> is that a market valuation used for tax purposes should be objective and supportable.</p>
     </div>
     <div class="foot-row">
-      <p>© 2026 Valify · Australia. All rights reserved.</p>
-      <p><a id="contact-email" href="mailto:dane@valify.com.au">dane@valify.com.au</a></p>
+      <p>&copy; 2026 Valify &middot; Australia. All rights reserved.</p>
+      <button type="button" class="link-btn foot-link" id="open-contact">Contact us</button>
     </div>
   </div>
 </footer>
 
+<dialog id="contact-dialog" aria-labelledby="contact-title">
+  <div class="dialog-body">
+    <button type="button" class="dialog-close" id="contact-close" aria-label="Close">&times;</button>
+
+    <div id="contact-intro">
+      <h2 id="contact-title">Contact us</h2>
+      <p class="sub">Send us a message and we'll get back to you.</p>
+    </div>
+
+    <form id="contact-form" novalidate>
+      <input type="hidden" name="access_key" value="588c7cf7-5750-4e74-8a26-c358120b008f">
+      <input type="hidden" name="from_name" value="Valify website">
+      <input type="hidden" name="subject" value="Website query">
+      <input type="hidden" name="Enquiry type" value="General query">
+      <div class="botcheck" aria-hidden="true"><label>Leave this empty <input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off"></label></div>
+
+      <div class="form-grid">
+        <div class="full">
+          <label for="c-name">Full name</label>
+          <input id="c-name" name="name" type="text" autocomplete="name" required>
+        </div>
+        <div>
+          <label for="c-email">Email</label>
+          <input id="c-email" name="email" type="email" autocomplete="email" required>
+        </div>
+        <div>
+          <label for="c-phone">Phone <span class="opt">(optional)</span></label>
+          <input id="c-phone" name="Phone" type="tel" autocomplete="tel" inputmode="tel" pattern="[0-9+\(\)\s\-]{8,}" title="Please enter a valid phone number">
+        </div>
+        <div class="full">
+          <label for="c-message">Message</label>
+          <textarea id="c-message" name="Message" required></textarea>
+        </div>
+        <div class="full">
+          <button class="btn" type="submit" id="contact-submit">Send message</button>
+        </div>
+      </div>
+      <div class="form-status" id="contact-status" role="status" aria-live="polite"></div>
+    </form>
+
+    <div class="done" id="contact-done" hidden tabindex="-1">
+      <h2>Thanks &mdash; your message is in.</h2>
+      <p>We'll get back to you as soon as we can.</p>
+      <button type="button" class="btn" id="contact-done-close">Close</button>
+    </div>
+  </div>
+</dialog>
+
+
 <script>
   (function () {
-    var FALLBACK_EMAIL = document.getElementById('contact-email').textContent;
     var ADDRESS_API = 'https://api.apps1.nsw.gov.au/planning/viewersf/V1/ePlanningApi/address';
     var MAX_PROPERTIES = 10;
     var SUFFIXES = ['ST','STREET','RD','ROAD','AVE','AV','AVENUE','PDE','PARADE','PL','PLACE','DR','DRIVE','CRES','CRESCENT','CT','COURT','LA','LANE','BVD','BOULEVARDE','BOULEVARD','CL','CLOSE','GR','GROVE','TCE','TERRACE','SQ','SQUARE','ESP','ESPLANADE','HWY','HIGHWAY','WAY','CIR','CIRCUIT','WALK','ROW'];
 
-    var form = document.getElementById('quote-form');
-    var status = document.getElementById('quote-status');
-    var button = document.getElementById('quote-submit');
-    var rowsEl = document.getElementById('addr-rows');
-    var addBtn = document.getElementById('add-property');
-    var intro = document.getElementById('quote-intro');
-    var done = document.getElementById('quote-done');
-    var rowCounter = 0;
-
-    function show(kind, html) {
-      status.className = 'form-status show ' + kind;
-      status.innerHTML = html;
+    /* ---------- shared helpers ---------- */
+    function showStatus(el, kind, html) {
+      el.className = 'form-status show ' + kind;
+      el.innerHTML = html;
+    }
+    function post(data, button, idleText, statusEl, onSuccess) {
+      var key = data.get('access_key');
+      if (!key || String(key).indexOf('PASTE_') === 0) {
+        showStatus(statusEl, 'err', 'This form isn\u2019t connected yet.');
+        return;
+      }
+      button.disabled = true;
+      button.textContent = 'Sending\u2026';
+      statusEl.className = 'form-status';
+      fetch('https://api.web3forms.com/submit', { method: 'POST', headers: { 'Accept': 'application/json' }, body: data })
+        .then(function (r) { return r.json().then(function (j) { return { ok: r.ok && j.success, json: j }; }); })
+        .then(function (res) {
+          if (!res.ok) throw new Error((res.json && res.json.message) || 'Submission failed');
+          onSuccess();
+        })
+        .catch(function () {
+          showStatus(statusEl, 'err', 'Sorry, that didn\u2019t send. Please try again in a few minutes.');
+        })
+        .finally(function () {
+          button.disabled = false;
+          button.textContent = idleText;
+        });
     }
 
     /* ---------- address formatting ---------- */
@@ -397,11 +491,22 @@
       input.addEventListener('blur', close);
     }
 
-    /* ---------- property rows ---------- */
+    /* ---------- quote form: property rows (address + estimated value) ---------- */
+    var quoteForm = document.getElementById('quote-form');
+    var quoteStatus = document.getElementById('quote-status');
+    var quoteButton = document.getElementById('quote-submit');
+    var rowsEl = document.getElementById('addr-rows');
+    var addBtn = document.getElementById('add-property');
+    var rowCounter = 0;
+
+    function digitsOnly(v) { return String(v || '').replace(/\D/g, '').slice(0, 12); }
+    function formatMoney(d) { return d ? Number(d).toLocaleString('en-AU') : ''; }
+
     function renumber() {
       var rows = rowsEl.querySelectorAll('.addr-row');
       rows.forEach(function (row, n) {
-        row.querySelector('label').textContent = n === 0 ? 'Property address' : 'Property ' + (n + 1) + ' address';
+        row.querySelector('label.addr-label').textContent = n === 0 ? 'Property address' : 'Property ' + (n + 1) + ' address';
+        row.querySelector('label.value-label').textContent = n === 0 ? 'Estimated value of your property' : 'Estimated value of property ' + (n + 1);
         var rm = row.querySelector('.remove');
         if (rm) rm.setAttribute('aria-label', 'Remove property ' + (n + 1));
       });
@@ -410,25 +515,40 @@
     function addRow() {
       var id = ++rowCounter, first = rowsEl.children.length === 0;
       var row = document.createElement('div'); row.className = 'addr-row';
+
       var head = document.createElement('div'); head.className = 'addr-row-head';
-      var label = document.createElement('label'); label.setAttribute('for', 'f-addr-' + id);
+      var label = document.createElement('label'); label.className = 'addr-label'; label.setAttribute('for', 'f-addr-' + id);
       head.appendChild(label);
       if (!first) {
         var rm = document.createElement('button'); rm.type = 'button'; rm.className = 'link-btn muted remove'; rm.textContent = 'Remove';
         rm.addEventListener('click', function () { row.remove(); renumber(); });
         head.appendChild(rm);
       }
+
       var combo = document.createElement('div'); combo.className = 'combo';
       var input = document.createElement('input');
       input.type = 'text'; input.id = 'f-addr-' + id; input.className = 'addr-input';
-      input.placeholder = 'Start typing the address…'; input.autocomplete = 'off';
+      input.placeholder = 'Start typing the address\u2026'; input.autocomplete = 'off';
       input.setAttribute('role', 'combobox'); input.setAttribute('aria-autocomplete', 'list');
       input.setAttribute('aria-expanded', 'false'); input.setAttribute('aria-controls', 'f-addr-list-' + id);
       if (first) input.required = true;
       var list = document.createElement('ul'); list.id = 'f-addr-list-' + id; list.className = 'suggestions';
       list.setAttribute('role', 'listbox'); list.hidden = true;
       combo.appendChild(input); combo.appendChild(list);
-      row.appendChild(head); row.appendChild(combo);
+
+      var vlabel = document.createElement('label'); vlabel.className = 'value-label'; vlabel.setAttribute('for', 'f-val-' + id);
+      var money = document.createElement('div'); money.className = 'money';
+      var sign = document.createElement('span'); sign.className = 'sign'; sign.setAttribute('aria-hidden', 'true'); sign.textContent = '$';
+      var value = document.createElement('input');
+      value.type = 'text'; value.id = 'f-val-' + id; value.className = 'value-input';
+      value.inputMode = 'numeric'; value.autocomplete = 'off'; value.placeholder = 'e.g. 1,200,000';
+      if (first) value.required = true;
+      value.addEventListener('input', function () {
+        var d = digitsOnly(value.value); value.value = formatMoney(d); value.setCustomValidity('');
+      });
+      money.appendChild(sign); money.appendChild(value);
+
+      row.appendChild(head); row.appendChild(combo); row.appendChild(vlabel); row.appendChild(money);
       rowsEl.appendChild(row);
       attachAutocomplete(input, list);
       renumber();
@@ -437,46 +557,68 @@
     addBtn.addEventListener('click', addRow);
     addRow();
 
-    /* ---------- submit ---------- */
-    form.addEventListener('submit', function (e) {
+    quoteForm.addEventListener('submit', function (e) {
       e.preventDefault();
-      if (!form.checkValidity()) { form.reportValidity(); return; }
 
-      var addresses = Array.prototype.map.call(rowsEl.querySelectorAll('.addr-input'), function (i) { return i.value.trim(); })
-        .filter(Boolean);
-      var data = new FormData(form);
-      if (!data.get('access_key') || data.get('access_key').indexOf('PASTE_') === 0) {
-        show('err', 'This form isn’t connected yet. Please email us directly at <a href="mailto:' + FALLBACK_EMAIL + '">' + FALLBACK_EMAIL + '</a>.');
-        return;
-      }
-      data.set('Number of properties', String(addresses.length));
-      data.set('Property addresses', addresses.map(function (a, n) { return (n + 1) + '. ' + a; }).join('\n'));
-      data.set('subject', 'New CGT valuation quote request — ' + (data.get('name') || '') +
-        (addresses.length > 1 ? ' (' + addresses.length + ' properties)' : ''));
+      // A property is only counted once it has an address; if it has one, it needs a value too.
+      var entries = [];
+      Array.prototype.forEach.call(rowsEl.querySelectorAll('.addr-row'), function (row) {
+        var addr = row.querySelector('.addr-input').value.trim();
+        var valueInput = row.querySelector('.value-input');
+        var val = digitsOnly(valueInput.value);
+        valueInput.setCustomValidity(addr && (!val || Number(val) < 1) ? 'Please enter an estimated value for this property' : '');
+        if (addr) entries.push({ address: addr, value: val });
+      });
+      if (!quoteForm.checkValidity()) { quoteForm.reportValidity(); return; }
 
-      button.disabled = true;
-      button.textContent = 'Sending…';
-      status.className = 'form-status';
+      var data = new FormData(quoteForm);
+      data.set('Number of properties', String(entries.length));
+      data.set('Property addresses', entries.map(function (en, n) {
+        return (n + 1) + '. ' + en.address + ' \u2014 estimated value $' + Number(en.value).toLocaleString('en-AU');
+      }).join('\n'));
+      entries.forEach(function (en, n) { data.set('Property ' + (n + 1) + ' estimated value', en.value); });
+      data.set('subject', 'New CGT valuation quote request \u2014 ' + (data.get('name') || '') +
+        (entries.length > 1 ? ' (' + entries.length + ' properties)' : ''));
 
-      fetch('https://api.web3forms.com/submit', {
-        method: 'POST',
-        headers: { 'Accept': 'application/json' },
-        body: data
-      })
-        .then(function (r) { return r.json().then(function (j) { return { ok: r.ok && j.success, json: j }; }); })
-        .then(function (res) {
-          if (!res.ok) throw new Error((res.json && res.json.message) || 'Submission failed');
-          form.hidden = true; intro.hidden = true; done.hidden = false;
-          done.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          done.focus({ preventScroll: true });
-        })
-        .catch(function () {
-          show('err', 'Sorry, that didn’t send. Please try again, or email us at <a href="mailto:' + FALLBACK_EMAIL + '">' + FALLBACK_EMAIL + '</a>.');
-        })
-        .finally(function () {
-          button.disabled = false;
-          button.textContent = 'Request my quote';
-        });
+      post(data, quoteButton, 'Request my quote', quoteStatus, function () {
+        var done = document.getElementById('quote-done');
+        quoteForm.hidden = true; document.getElementById('quote-intro').hidden = true; done.hidden = false;
+        done.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        done.focus({ preventScroll: true });
+      });
+    });
+
+    /* ---------- contact dialog ---------- */
+    var dialog = document.getElementById('contact-dialog');
+    var contactForm = document.getElementById('contact-form');
+    var contactStatus = document.getElementById('contact-status');
+    var contactButton = document.getElementById('contact-submit');
+    var contactIntro = document.getElementById('contact-intro');
+    var contactDone = document.getElementById('contact-done');
+
+    function openContact() {
+      contactForm.hidden = false; contactIntro.hidden = false; contactDone.hidden = true;
+      contactStatus.className = 'form-status';
+      if (typeof dialog.showModal === 'function') dialog.showModal(); else dialog.setAttribute('open', '');
+      document.getElementById('c-name').focus();
+    }
+    function closeContact() { if (typeof dialog.close === 'function') dialog.close(); else dialog.removeAttribute('open'); }
+
+    document.getElementById('open-contact').addEventListener('click', openContact);
+    document.getElementById('contact-close').addEventListener('click', closeContact);
+    document.getElementById('contact-done-close').addEventListener('click', closeContact);
+    dialog.addEventListener('click', function (e) { if (e.target === dialog) closeContact(); });   // click on the backdrop
+
+    contactForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (!contactForm.checkValidity()) { contactForm.reportValidity(); return; }
+      var data = new FormData(contactForm);
+      data.set('subject', 'Website query \u2014 ' + (data.get('name') || ''));
+      post(data, contactButton, 'Send message', contactStatus, function () {
+        contactForm.reset();
+        contactForm.hidden = true; contactIntro.hidden = true; contactDone.hidden = false;
+        contactDone.focus({ preventScroll: true });
+      });
     });
   })();
 </script>
